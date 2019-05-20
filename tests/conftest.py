@@ -1,30 +1,52 @@
 import os
 import tempfile
+from datetime import datetime
 
 import pytest
-from flaskr import create_app
-from flaskr.db import get_db, init_db
-
-with open(os.path.join(os.path.dirname(__file__), 'data.sql'), 'rb') as f:
-    _data_sql = f.read().decode('utf8')
+from flaskr import create_app, db
+from flaskr.models.user import User
+from flaskr.models.blog import Blog
 
 @pytest.fixture
 def app():
-    db_fd, db_path = tempfile.mkstemp()
+    db_path = tempfile.mkstemp()
 
     app = create_app({
         'TESTING': True,
-        'DATABASE': db_path,
+        'SQLALCHEMY_DATABASE_URI': 'sqlite:////' + db_path[1],
     })
 
     with app.app_context():
-        init_db()
-        get_db().executescript(_data_sql)
+        db.init_app(app)
+        db.create_all()
+        populate_db()
     
     yield app
 
-    os.close(db_fd)
-    os.unlink(db_path)
+    os.unlink(db_path[1])
+
+def populate_db():
+    user_one = User(
+        username = 'test',
+        password = 'pbkdf2:sha256:50000$TCI4GzcX$0de171a4f4dac32e3364c7ddc7c14f3e2fa61f2d17574483f7ffbb431b4acb2f'
+    )
+    user_two = User(
+        username = 'other',
+        password = 'pbkdf2:sha256:50000$kJPKsz6N$d2d4784f1b030a9761f5ccaeeaca413f27f2ecb76d6168407af962ddce849f79'
+    )
+    blog_one = Blog(
+        title = 'test title',
+        body = 'test\nbody',
+        author_id = 1,
+        created = datetime.strptime(
+            '2018-01-01 00:00:00',
+            '%Y-%m-%d %H:%M:%S'
+        )
+    )
+    db.session.add(user_one)
+    db.session.add(user_two)
+    db.session.add(blog_one)
+    db.session.commit()
 
 @pytest.fixture
 def client(app):

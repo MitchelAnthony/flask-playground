@@ -1,6 +1,9 @@
 import pytest
-from flaskr.db import get_db
 
+from sqlalchemy import func
+from flaskr import db
+from flaskr.models.user import User
+from flaskr.models.blog import Blog
 
 def test_index(client, auth):
     response = client.get('/')
@@ -28,9 +31,9 @@ def test_login_required(client, path):
 def test_author_required(app, client, auth):
     # change the post author to another user
     with app.app_context():
-        db = get_db()
-        db.execute('UPDATE post SET author_id = 2 WHERE id = 1')
-        db.commit()
+        blog = Blog.query.get(1)
+        blog.author_id = 2
+        db.session.commit()
 
     auth.login()
     # current user can't modify other user's post
@@ -54,8 +57,7 @@ def test_create(client, auth, app):
     client.post('/create', data={'title': 'created', 'body': ''})
 
     with app.app_context():
-        db = get_db()
-        count = db.execute('SELECT COUNT(id) FROM post').fetchone()[0]
+        count = db.session.query(func.count('*')).select_from(Blog).scalar()
         assert count == 2
 
 
@@ -65,9 +67,8 @@ def test_update(client, auth, app):
     client.post('/1/update', data={'title': 'updated', 'body': ''})
 
     with app.app_context():
-        db = get_db()
-        post = db.execute('SELECT * FROM post WHERE id = 1').fetchone()
-        assert post['title'] == 'updated'
+        post = Blog.query.get(1)
+        assert post.title == 'updated'
 
 
 @pytest.mark.parametrize('path', (
@@ -85,6 +86,5 @@ def test_delete(client, auth, app):
     assert response.headers['Location'] == 'http://localhost/'
 
     with app.app_context():
-        db = get_db()
-        post = db.execute('SELECT * FROM post WHERE id = 1').fetchone()
+        post = Blog.query.get(1)
         assert post is None
