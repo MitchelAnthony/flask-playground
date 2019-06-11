@@ -5,3 +5,4 @@ class User(db.Model):
     username = db.Column(db.String(), unique=True, nullable=False)
     password = db.Column(db.String(), nullable=False)
     blogs = db.relationship('Blog', backref='user', lazy=True)
+    attempts = db.relationship('Attempt', backref='attempt', lazy=True)
