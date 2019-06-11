@@ -25,17 +25,11 @@ def create_app(test_config=None):
     except OSError:
         pass
     
-    @app.route('/hello')
-    def hello():
-        return 'Hello World!'
-    
     db.init_app(app)
     app.cli.add_command(init_db_command)
 
-    from flaskr import auth
+    from flaskr.controllers import auth, blog
     app.register_blueprint(auth.bp)
-
-    from flaskr import blog
     app.register_blueprint(blog.bp)
     app.add_url_rule('/', endpoint='index')
 

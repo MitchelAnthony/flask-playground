@@ -5,7 +5,7 @@ from flask import (
 )
 from werkzeug.exceptions import abort
 
-from flaskr.auth import login_required
+from flaskr.controllers.auth import login_required
 from flaskr import db
 from flaskr.models.user import User
 from flaskr.models.blog import Blog
