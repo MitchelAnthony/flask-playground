@@ -1,4 +1,5 @@
 from flaskr import db
+from flaskr.models import attempt, wall
 
 class Route(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -6,4 +7,4 @@ class Route(db.Model):
     grade = db.Column(db.String(), nullable=True)
     name = db.Column(db.String(), nullable=True)
     wall_id = db.Column(db.Integer, db.ForeignKey('wall.id'), nullable=False)
-    attempts = db.relationship('Attempt', backref='attempt', lazy=True)
+    attempts = db.relationship('Attempt', backref='route', lazy=True)

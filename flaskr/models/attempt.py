@@ -1,4 +1,5 @@
 from flaskr import db
+from flaskr.models import route, user
 
 class Attempt(db.Model):
     id = db.Column(db.Integer, primary_key=True)
